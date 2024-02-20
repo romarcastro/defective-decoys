@@ -1,2 +1,2 @@
-# defective-decoys
-A turn-based game made with C.
+# Defective Decoys
+An open source turn-based game made with C.
