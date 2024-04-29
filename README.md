@@ -9,10 +9,12 @@ At every turn, a player must find the defective computers on the opponent’s si
 
 #  Game Development Team 👾
 <ul>
+  <span>  Game Development Team </span>
+  <li><a href="https://github.com/jkbicierro"> John Bicierro </a><br></li>
   <li><a href="https://github.com/romarcastro"> Romar Castro </a> <br></li>
-  <li><a href="https://github.com/jkbicierro"> John Bicierro </a> <br></li>
-  <li><a href="https://github.com/erictanthegreat"> Eric Tan Jr. </a> <br></li>
-  <li><a href="https://github.com/AnthonyDavis420"> John Ken Lanon </a> <br>
+  <li><a href="https://github.com/erictanthegreat"> Eric Tan Jr. </a> <br></li> <br>
+ <span>  Socket Development Team </span>
+  <li><a href="https://github.com/AnthonyDavis420"> John Ken Lanon </a>  | Socket Dev Lead <br>
 </li>
 </ul>
 
