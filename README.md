@@ -7,7 +7,7 @@ An open-source turn-based game made with C.
 **Goal/Game Mechanics:** <br>
 At every turn, a player must find the defective computers on the opponent’s side. But first, each player must plant their defective computers as decoys in the 4x4 computer laboratory.
 
-#  Game Development Team 👾
+#  Development Team 👾
 <ul>
   <span>  Game Development Team </span>
   <li><a href="https://github.com/jkbicierro"> John Bicierro </a><br></li>
