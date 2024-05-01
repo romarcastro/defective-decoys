@@ -26,10 +26,35 @@
 #include <netinet/in.h>
 
 #include <sys/types.h>
+
+#include <netdb.h>
 #include <unistd.h>
+
+// Callbacks
+void OnPlayerConnection(char *ip, int port);
 
 int main(int argc, char const *argv[])
 {
-    printf("Hello, world!");
+    // argc amount of argument
+    printf("main() debug: argc: %d", argc);
+
+
+    printf("Defective Decoys\n");
+
+    char ip[24]; int port;
+    printf("Please enter the IP you would like to connect to: \n");
+    scanf("%s", ip);
+    printf("Please enter the port: \n");
+    scanf("%d", &port);
+
+    OnPlayerConnection(ip, port);
+    // Func connect to the socket (IP, PORT)
     return 0;
 }
+
+// Functions
+void OnPlayerConnection(char *ip, int port) {
+    
+
+}
+
