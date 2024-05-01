@@ -4,11 +4,12 @@
             |  |  | -_|  _| -_|  _|  _| | | | -_|  |  |  | -_|  _| . | | |_ -|
             |____/|___|_| |___|___|_| |_|\_/|___|  |____/|___|___|___|_  |___|
                                                                     |___|   
-    
-    Filename: main.c
-	Author: John Bicierro
 
-    Collaborators:
+    Defective Decoys                                                         
+    Filename: main.c
+	
+    Contributers: 
+        [+] John Bicierro 
         [+] Romar Castro
         [+] Ken Lanon
         [+] Eric Tan 
