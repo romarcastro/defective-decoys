@@ -35,26 +35,23 @@ void OnPlayerConnection(char *ip, int port);
 
 int main(int argc, char const *argv[])
 {
-    // argc amount of argument
-    printf("main() debug: argc: %d", argc);
-
-
-    printf("Defective Decoys\n");
-
     char ip[24]; int port;
-    printf("Please enter the IP you would like to connect to: \n");
+    printf("Please enter the IP you would like to connect to: ");
     scanf("%s", ip);
-    printf("Please enter the port: \n");
+    printf("Please enter the port: ");
     scanf("%d", &port);
 
     OnPlayerConnection(ip, port);
-    // Func connect to the socket (IP, PORT)
     return 0;
 }
 
 // Functions
-void OnPlayerConnection(char *ip, int port) {
-    
+void ReturnEx(char *input) {
+    printf("%s", input);
+}
 
+void OnPlayerConnection(char *ip, int port) {
+    printf("* Connecting to %s:%d ...\n", ip, port);
+    printf("* Connected. Joining the game ...");
 }
 
