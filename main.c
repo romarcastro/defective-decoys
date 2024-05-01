@@ -31,7 +31,7 @@
 #include <unistd.h>
 
 // Callbacks
-void OnPlayerConnection(char *ip, int port);
+#include "lib/connection.h"
 
 int main(int argc, char const *argv[])
 {
