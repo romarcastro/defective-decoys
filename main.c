@@ -34,26 +34,93 @@
 // Callbacks
 #include "lib/connection.h"
 
-int 
+// Socket
+int server_socket,
+    client_socket;
+
+struct 
+    sockaddr_in 
+        server_address, 
+        client_address;
+
+    socklen_t 
+        client_length;
 
 int main(int argc, char const *argv[])
 {
-    char ip[24]; int port;
-    printf("Please enter the IP you would like to connect to: ");
-    scanf("%s", ip);
+    int port;
     printf("Please enter the port: ");
     scanf("%d", &port);
 
-    OnPlayerConnection(ip, port);
+    OnPlayerConnection("localhost", port);
+
+    OnGameModeExit();
     return 0;
 }
 
 // Functions
-void ReturnEx(char *input) {
-    printf("%s", input);
+void OnPlayerConnection(char *ip, int port) 
+{
+    printf("* Connecting to %s:%d ...\n", ip, port);
+
+    server_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if(server_socket < 0) {
+        ReturnEx("server_socket failed! (socket)");
+    }
+
+    bzero((char *) &server_address, sizeof(server_address));
+    server_address.sin_addr.s_addr = INADDR_ANY;
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(port);
+
+    if(bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
+        ReturnEx("binding failed! (socket)");
+    }
+
+    listen(server_socket, MAX_PLAYERS);
+    printf("* Server listening to port %d ...\n", port);
+    
+    // Client Socket
+    client_length = sizeof(client_length);
+    client_socket = accept(server_socket, (struct sockaddr *) &client_address, &client_length);
+    if(client_socket < 0) {
+        ReturnEx("accept failed! (socket)");
+    }
+
+    int n; char buffer[256];
+    while(1) { // Looping the conversation
+        bzero(buffer, 256);
+        n = recv(client_socket, buffer, 256, 0);
+        if(n < 0) {
+            ReturnEx("read failed! (socket)");
+        }
+
+        printf("Client: %s\n", buffer);
+        bzero(buffer, 256);
+        fgets(buffer, 255, stdin);
+
+        n = write(client_socket, buffer, strlen(buffer));
+        if(n < 0) {
+            ReturnEx("write failed! (socket)");
+        }
+
+        int i = strncmp("Bye", buffer, 3);
+        if(i == 0) {
+            break;
+        }
+    }
+
+    printf("* Connected. Joining the game ...\n");
 }
 
-void OnPlayerConnection(char *ip, int port) {
-    printf("* Connecting to %s:%d ...\n", ip, port);
-    printf("* Connected. Joining the game ...");
+void OnGameModeExit() 
+{
+    close(server_socket);
+    close(client_socket);
+}
+
+void ReturnEx(char *input) 
+{
+    printf("Error: %s\n", input);
+    exit(EXIT_FAILURE);
 }
