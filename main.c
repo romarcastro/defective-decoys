@@ -16,6 +16,7 @@
 																							*/  
 
 #define VER 0.1
+#define MAX_PLAYERS 2
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,6 +33,8 @@
 
 // Callbacks
 #include "lib/connection.h"
+
+int 
 
 int main(int argc, char const *argv[])
 {
@@ -54,4 +57,3 @@ void OnPlayerConnection(char *ip, int port) {
     printf("* Connecting to %s:%d ...\n", ip, port);
     printf("* Connected. Joining the game ...");
 }
-
