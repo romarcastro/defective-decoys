@@ -52,6 +52,7 @@ int main(int argc, char const *argv[])
     printf("Please enter the port: ");
     scanf("%d", &port);
 
+    // Socket
     OnPlayerConnection("localhost", port);
 
     OnGameModeExit();
