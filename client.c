@@ -30,12 +30,7 @@ struct sockaddr_in server_address;
 struct hostent *server;
 
 // Callbacks
-void ReturnEx(char *input);
-void SetPlayerConnection(char *ip, int port);
-void SendClientMessage(const char *str);
-void SendClientMessageToAll(const char *str);
-void OnPlayerConnect();
-void OnGameModeInit();
+#include "lib/client.h"
 
 int main(int argc,  char *argv[]) 
 {
@@ -50,7 +45,7 @@ int main(int argc,  char *argv[])
         SetPlayerConnection(ip, port);
     }
 
-    OnPlayerConnect();
+    OnGameModeInit();
 
     close(client_socket);
     return 0;
@@ -93,11 +88,6 @@ void OnGameModeInit()
     }*/
 }
 
-void OnPlayerConnect() 
-{
-    OnGameModeInit();
-}
-
 void SetPlayerConnection(char *ip, int port) 
 {
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -129,6 +119,7 @@ void SendClientMessage(const char *str)
         ReturnEx("send failed! (socket)");
     }
 }
+
 void SendClientMessageToAll(const char *str)
 {
     int n = send(client_socket, str, strlen(str), 0);

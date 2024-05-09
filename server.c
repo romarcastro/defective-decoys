@@ -18,8 +18,6 @@
 #define VER 0.1
 #define MAX_PLAYERS 2
 
-#define MAX_BUFFER 1024
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,25 +47,13 @@ struct
         client_length;
 
 // Callbacks
-/* -> Game */
-void OnPlayerConnect();
-void OnGameModeInit();
-
-/* -> Main */
-void OnGameModeExit();
-void ClearChat(int n);
-void ReturnEx(char *input);
-
-/* -> Socket */
-void SetPlayerConnection(char *ip, int port);
-void SendClientMessage(const char *str);
-void SendClientMessageToAll(const char *str);
+#include "lib/game.h" /* -> Game */
+#include "lib/main.h" /* -> Main */
+#include "lib/socket.h" /* -> Socket */
 
 // Main Function
 int main(int argc, char const *argv[])
 {
-    //ClearChat(60);
-
     // Socket
     if(debug) {
         SetPlayerConnection("localhost", atoi(argv[1]));
@@ -79,9 +65,9 @@ int main(int argc, char const *argv[])
     }
 
     // Game
-    OnPlayerConnect();
+    OnGameModeInit();
 
-    // 
+    // Delete static objects
     OnGameModeExit();
     return 0;
 }
@@ -95,14 +81,14 @@ int main(int argc, char const *argv[])
 void OnGameModeInit()
 {
     // Variables
-    int User[MAX_PLAYERS][ROW][COL];
+    int Board[MAX_PLAYERS][ROW][COL];
     for(int i = 0; i < MAX_PLAYERS; i++)
     {
         for(int j = 0; j < ROW; j++)
         {
             for(int k = 0; k < COL; k++)
             {
-                User[i][j][k] = 0;
+                Board[i][j][k] = 0;
             }
         }
     }
@@ -112,17 +98,59 @@ void OnGameModeInit()
     SendClientMessage("Please wait for your next turn! sabi ni ken");
 
     // Setup phase (Server)
-    char str[128];
     for(int i = 0; i < 4; i++) // 4 Decoys sabi ni romar
     {
+        char str[128];
         printf("Enter coordinates for decoy (e.g., A0): ");
-        fgets(str, sizeof(str), stdin);
+        if(fgets(str, sizeof(str), stdin))
+        {
+            str[strcspn(str, "\n")] = 0;
+
+            // check the input
+            if(strlen(str) != 2)
+            {
+                printf("[!] Invalid input. Please enter exactly two characters (e.g., A0). \n");
+                continue;
+            }
+
+            char row = str[0];
+            char col = str[1];
+
+            if(!isValidInput(row, col)) 
+            {
+                printf("[!] Invalid coordinates. Coordinates must be A-D for rows and 0-3 for columns. Try again.\n");
+                continue; 
+            }
+        }
     }
- 
 
+    // Wait phase (Server)
+    printf("Please wait for your opponent to place decoy(s)! sabi ni ken");
 
+    // Setup phase (Client)
+    for(int i = 0; i < 4; i++) // 4 Decoys sabi ni romar
+    {
+        char str[128];
+        bzero(str, sizeof(str));
+        SendClientMessage("Enter coordinates for decoy (e.g., A0): ");
+        recv(client_socket, str, sizeof(str), 0);
+        
+        // check the input
+        if(strlen(str) != 2)
+        {
+            SendClientMessage("[!] Invalid input. Please enter exactly two characters (e.g., A0)");
+            continue;
+        }
 
+        char row = str[0];
+        char col = str[1];
 
+        if(!isValidInput(row, col)) 
+        {
+            SendClientMessage("[!] Invalid coordinates. Coordinates must be A-D for rows and 0-3 for columns. Try again.");
+            continue; 
+        }
+    }
 
     /*int n; char buffer[256];
     while(1) { // Looping the conversation
@@ -148,10 +176,9 @@ void OnGameModeInit()
         }
     }*/
 }
-
-void OnPlayerConnect() 
+bool isValidInput(char row, char col) 
 {
-    OnGameModeInit();
+    return (row >= 'A' && row <= 'D') && (col >= '0' && col <= '3');
 }
 
 // Socket
@@ -204,11 +231,6 @@ void SendClientMessageToAll(const char *str)
 void ReturnEx(char *input) {
     printf("Error: %s\n", input);
     exit(EXIT_FAILURE);
-}
-void ClearChat(int n) {
-    while(n--) {
-        printf(" \n");
-    }
 }
 void OnGameModeExit() {
     close(server_socket);
