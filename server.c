@@ -176,6 +176,7 @@ void OnGameModeInit()
         }
     }*/
 }
+
 bool isValidInput(char row, char col) 
 {
     return (row >= 'A' && row <= 'D') && (col >= '0' && col <= '3');
@@ -211,6 +212,7 @@ void SetPlayerConnection(char *ip, int port)
     }
     printf("* Client connected using the port %d ...\n", port);
 }
+
 void SendClientMessage(const char *str)
 {
     int n = send(client_socket, str, strlen(str), 0);
@@ -218,6 +220,7 @@ void SendClientMessage(const char *str)
         ReturnEx("send failed! (socket)");
     }
 }
+
 void SendClientMessageToAll(const char *str)
 {
     int n = send(client_socket, str, strlen(str), 0);
@@ -232,6 +235,7 @@ void ReturnEx(char *input) {
     printf("Error: %s\n", input);
     exit(EXIT_FAILURE);
 }
+
 void OnGameModeExit() {
     close(server_socket);
     close(client_socket);
