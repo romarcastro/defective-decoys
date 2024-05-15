@@ -5,7 +5,7 @@ An open-source turn-based game made with C.
  Each must find all the defective computers on the other side of the laboratory to win the game.
 
 **Goal/Game Mechanics:** <br>
-At every turn, a player must find the defective computers on the opponent’s side. But first, each player must plant their defective computers as decoys in the 4x4 computer laboratory.
+At every turn, a player must avoid the defective computers on the opponent’s side. But first, each player must plant their defective computers as decoys in the 4x4 computer laboratory.
 
 #  Development Team 👾
 <ul>
