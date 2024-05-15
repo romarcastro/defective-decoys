@@ -1,9 +1,3 @@
-  																							/*
-    Defective Decoys 
-    Filename: client.c
-    Author: 
-																							*/  
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,6 +7,7 @@
 
 #define PORT 5555
 #define BUFFER_SIZE 1024
+
 #define ROWS 4
 #define COLS 4
 #define DECOYS 4
@@ -101,7 +96,7 @@ void guess() {
         int colIndex = col - '0';
         
         //test if the client is still connected to the server
-	char testing[1];
+	    char testing[1];
         send(sock, input, strlen(input), 0);
         int test = recv(sock, testing, 1, MSG_PEEK | MSG_DONTWAIT);
         if (test == 0) {
@@ -171,12 +166,12 @@ int main(int argc, char **argv) {
         printf("Usage: %s <server IP address>\n", argv[0]);
         return 1;
     }
-
     if (setupConnection(argv) != 0) {
         return 1;
     }
 
     initializeBoards();
+
     printf("______      __          _   _                 _                          \n");
     printf("|  _  \\    / _|        | | (_)               | |                         \n");
     printf("| | | |___| |_ ___  ___| |_ ___   _____    __| | ___  ___ ___  _   _ ___ \n");

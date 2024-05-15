@@ -1,20 +1,3 @@
-  																							/*
-             _____      ___         _   _           ____                      
-            |     \ ___|  _|___ ___| |_|_|_ _ ___  |    \ ___ ___ ___ _ _ ___ 
-            |  |  | -_|  _| -_|  _|  _| | | | -_|  |  |  | -_|  _| . | | |_ -|
-            |____/|___|_| |___|___|_| |_|\_/|___|  |____/|___|___|___|_  |___|
-                                                                    |___|   
-
-    Defective Decoys                                                         
-    Filename: main.c
-	
-    Contributers: 
-        [+] John Bicierro 
-        [+] Romar Castro
-        [+] Ken Lanon
-        [+] Eric Tan 
-																							*/  
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
