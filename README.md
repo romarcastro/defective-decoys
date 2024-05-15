@@ -1,10 +1,10 @@
-# Defective Decoys
+# Defective Decoys 🖥️
 An open-source turn-based game made with C.
 
- In a computer laboratory, two students must detect defective computers planted as decoys by one another. <br>
- Each must find all the defective computers on the other side of the laboratory to win the game.
+ In a computer laboratory, two students must carefully open the computers as defective computers planted as decoys by one another are scattered across the lab.
+ Each player must avoid the defective computers on the other side of the laboratory to win the game.
 
-**Game Mechanics:** <br>
+## Game Mechanics
 
 ***Phase 1: Setup Phase*** <br>
 * In a 4x4 computer laboratory (grid), each player must plant their defective computers as decoys. Duplicate cell input is not allowed.
