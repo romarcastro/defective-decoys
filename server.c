@@ -15,228 +15,152 @@
         [+] Eric Tan 
 																							*/  
 
-#define VER 0.1
-#define MAX_PLAYERS 2
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-// Socket
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <sys/types.h>
+#define PORT 5555
+#define BUFFER_SIZE 1024
+#define ROWS 4
+#define COLS 4
+#define DECOYS 4
 
-#include <netdb.h>
-#include <unistd.h>
+typedef struct {
+    int socket;
+    char board[ROWS][COLS];
+    int lives;
+} Player;
 
-// Debug (note: 1 true else 0 false)
-int debug = 1;
+Player players[2];
 
-// Socket (Server)
-int server_socket,
-    client_socket;
+void die_with_error(char *errorMessage) {
+    perror(errorMessage);
+    exit(1);  // Terminate program with an error status
+}
 
-struct 
-    sockaddr_in 
-        server_address, 
-        client_address;
+void initializeBoard(char board[ROWS][COLS]) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            board[i][j] = ' ';  // Set all positions to space indicating empty
+        }
+    }
+}
 
-    socklen_t 
-        client_length;
+// Function to receive decoy placements from a player
+void receiveAndSetDecoys(Player *player) {
+    char buffer[4];  // Buffer for "A1\0"
+    for (int i = 0; i < DECOYS; i++) {
+        if (recv(player->socket, buffer, 3, 0) < 0) {
+            die_with_error("Error receiving decoys");
+        }
+        buffer[3] = '\0'; // Null-terminate the buffer
+        int row = buffer[0] - 'A';
+        int col = buffer[1] - '0';
+        if (row >= 0 && row < ROWS && col >= 0 && col < COLS) {
+            player->board[row][col] = 'X';  // Mark the decoy
+        }
+    }
+}
 
-// Callbacks
-#include "lib/game.h" /* -> Game */
-#include "lib/main.h" /* -> Main */
-#include "lib/socket.h" /* -> Socket */
+void sendWinMessageAndCloseSocket(int clientSocket, const char *message) {
+    send(clientSocket, message, strlen(message), 0);
+    close(clientSocket);
+}
 
-// Main Function
-int main(int argc, char const *argv[])
-{
-    // Socket
-    if(debug) {
-        SetPlayerConnection("localhost", atoi(argv[1]));
-    } else {
-        int port;
-        printf("Please enter the port: ");
-        scanf("%d", &port);
-        SetPlayerConnection("localhost", port);
+// Check the opponent's board for a hit or miss
+char checkGuess(Player *opponent, int row, int col) {
+    if (opponent->board[row][col] == 'X') {
+        opponent->board[row][col] = 'O';  // Mark as guessed
+        return 'H';  // Return 'H' to indicate a hit which also includes re-guessing
+    }
+    if (opponent->board[row][col] == 'O') {
+        opponent->board[row][col] = 'O';  // Mark as guessed
+        return 'A'; 
+    }
+    opponent->board[row][col] = 'O';
+    return 'M';  // Return 'M' for a Miss
+}
+
+int main() {
+    int server_fd, addrlen;
+    struct sockaddr_in address;
+    int opt = 1;
+
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+    address.sin_family = AF_INET;
+    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_port = htons(PORT);
+
+    if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0) {
+        die_with_error("Bind failed");
     }
 
-    // Game
-    OnGameModeInit();
+    listen(server_fd, 2);  // Listen for up to 2 connections
+    addrlen = sizeof(address);
 
-    // Delete static objects
-    OnGameModeExit();
+    Player players[2];  // Array to hold two players
+    // Accept connections from both players
+    for (int i = 0; i < 2; i++) {
+        players[i].socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t*)&addrlen);
+        if (players[i].socket < 0) {
+            die_with_error("Accept failed");
+        }
+        initializeBoard(players[i].board);
+    }
+
+    // Receive and set decoys for both players
+    for (int i = 0; i < 2; i++) {
+        receiveAndSetDecoys(&players[i]);
+    }
+
+    // Game loop: ensure both players submit guesses before processing
+    char results[2]; // Store results for both players
+    while (1) {
+        char guesses[2][4];  // Buffer to receive guesses for both players
+
+        // Receive guesses from both players
+        for (int i = 0; i < 2; i++) {
+            int bytes_received = recv(players[i].socket, guesses[i], 3, 0);
+    
+            // Check for errors first
+            if (bytes_received < 0) {
+                die_with_error("Error receiving guess");
+            }
+    
+            // Ensure the buffer is null-terminated
+            guesses[i][3] = '\0'; 
+    
+            // Now check if the specific 'W' was received
+            if (bytes_received == 1 && guesses[i][0] == 'W') {
+                sendWinMessageAndCloseSocket(players[i].socket, "end_msg");
+                close(players[1 - i].socket);
+                close(server_fd);
+                return 0;
+            }
+        }
+
+        // Process both guesses
+        for (int i = 0; i < 2; i++) {
+            int row = guesses[i][0] - 'A';
+            int col = guesses[i][1] - '0';
+            results[i] = checkGuess(&players[1 - i], row, col);
+        }
+
+        // Send results back to both players
+        for (int i = 0; i < 2; i++) {
+            send(players[i].socket, &results[i], 1, 0);
+        }
+    }
+
+    // Cleanup
+    for (int i = 0; i < 2; i++) {
+        close(players[i].socket);
+    }
+    close(server_fd);
     return 0;
 }
 
-// Game
-#define ROW (4)
-#define COL (4)
-#define SERVER_ID 0
-#define CLIENT_ID 1
-
-void OnGameModeInit()
-{
-    // Variables
-    int Board[MAX_PLAYERS][ROW][COL];
-    for(int i = 0; i < MAX_PLAYERS; i++)
-    {
-        for(int j = 0; j < ROW; j++)
-        {
-            for(int k = 0; k < COL; k++)
-            {
-                Board[i][j][k] = 0;
-            }
-        }
-    }
-
-    /* Setup Phase 1 (Server) */ 
-    // Wait phase (Client)
-    SendClientMessage("Please wait for your next turn! sabi ni ken");
-
-    // Setup phase (Server)
-    for(int i = 0; i < 4; i++) // 4 Decoys sabi ni romar
-    {
-        char str[128];
-        printf("Enter coordinates for decoy (e.g., A0): ");
-        if(fgets(str, sizeof(str), stdin))
-        {
-            str[strcspn(str, "\n")] = 0;
-
-            // check the input
-            if(strlen(str) != 2)
-            {
-                printf("[!] Invalid input. Please enter exactly two characters (e.g., A0). \n");
-                continue;
-            }
-
-            char row = str[0];
-            char col = str[1];
-
-            if(!isValidInput(row, col)) 
-            {
-                printf("[!] Invalid coordinates. Coordinates must be A-D for rows and 0-3 for columns. Try again.\n");
-                continue; 
-            }
-        }
-    }
-
-    // Wait phase (Server)
-    printf("Please wait for your opponent to place decoy(s)! sabi ni ken");
-
-    // Setup phase (Client)
-    for(int i = 0; i < 4; i++) // 4 Decoys sabi ni romar
-    {
-        char str[128];
-        bzero(str, sizeof(str));
-        SendClientMessage("Enter coordinates for decoy (e.g., A0): ");
-        recv(client_socket, str, sizeof(str), 0);
-        
-        // check the input
-        if(strlen(str) != 2)
-        {
-            SendClientMessage("[!] Invalid input. Please enter exactly two characters (e.g., A0)");
-            continue;
-        }
-
-        char row = str[0];
-        char col = str[1];
-
-        if(!isValidInput(row, col)) 
-        {
-            SendClientMessage("[!] Invalid coordinates. Coordinates must be A-D for rows and 0-3 for columns. Try again.");
-            continue; 
-        }
-    }
-
-    /*int n; char buffer[256];
-    while(1) { // Looping the conversation
-        bzero(buffer, 256);
-        fgets(buffer, 256, stdin);
-
-        n = send(client_socket, buffer, strlen(buffer), 0);
-        if(n < 0) {
-            ReturnEx("send failed! (socket)");
-        }
-
-        bzero(buffer, 256);
-        n = recv(client_socket, buffer, 256, 0);
-        if(n < 0) {
-            ReturnEx("read failed! (socket)");
-        }
-
-        printf("Server: %s", buffer);
-
-        int i = strncmp("Bye", buffer, 3);
-        if(i == 0) {
-            break;
-        }
-    }*/
-}
-
-bool isValidInput(char row, char col) 
-{
-    return (row >= 'A' && row <= 'D') && (col >= '0' && col <= '3');
-}
-
-// Socket
-void SetPlayerConnection(char *ip, int port) 
-{
-    printf("* Connecting to %s:%d ...\n", ip, port);
-
-    server_socket = socket(AF_INET, SOCK_STREAM, 0);
-    if(server_socket < 0) {
-        ReturnEx("server_socket failed! (socket)");
-    }
-
-    bzero((char *) &server_address, sizeof(server_address));
-    server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(port);
-
-    if(bind(server_socket, (struct sockaddr *) &server_address, sizeof(server_address)) < 0) {
-        ReturnEx("binding failed! (socket)");
-    }
-
-    listen(server_socket, MAX_PLAYERS);
-    printf("* Server listening to port %d ...\n", port);
-    
-    // Client Socket
-    client_length = sizeof(client_length);
-    client_socket = accept(server_socket, (struct sockaddr *) &client_address, &client_length);
-    if(client_socket < 0) {
-        ReturnEx("accept failed! (socket)");
-    }
-    printf("* Client connected using the port %d ...\n", port);
-}
-
-void SendClientMessage(const char *str)
-{
-    int n = send(client_socket, str, strlen(str), 0);
-    if(n < 0) {
-        ReturnEx("send failed! (socket)");
-    }
-}
-
-void SendClientMessageToAll(const char *str)
-{
-    int n = send(client_socket, str, strlen(str), 0);
-    if(n < 0) {
-        ReturnEx("send failed! (socket)");
-    }
-    printf("%s\n", str);
-}
-
-// Main
-void ReturnEx(char *input) {
-    printf("Error: %s\n", input);
-    exit(EXIT_FAILURE);
-}
-
-void OnGameModeExit() {
-    close(server_socket);
-    close(client_socket);
-}
