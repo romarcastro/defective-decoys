@@ -95,7 +95,7 @@ void guess() {
         int colIndex = col - '0';
         
         //test if the client is still connected to the server
-	char testing[1];
+	    char testing[1];
         send(sock, input, strlen(input), 0);
         int test = recv(sock, testing, 1, MSG_PEEK | MSG_DONTWAIT);
         if (test == 0) {
