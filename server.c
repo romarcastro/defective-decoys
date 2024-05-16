@@ -14,7 +14,6 @@
 typedef struct {
     int socket;
     char board[ROWS][COLS];
-    int lives;
 } Player;
 
 Player players[2];
