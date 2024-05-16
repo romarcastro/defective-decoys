@@ -40,7 +40,7 @@ void printBoard(char board[ROWS][COLS]) {
 }
 
 void placeAndSendDecoys() {
-    printf("Place %d computers as your decoys on your board:\n", DECOYS);
+    printf("Place %d computers as your decoys on your laboratory:\n", DECOYS);
     int decoysPlaced = 0;
     while (decoysPlaced < DECOYS) {
         char input[100];
@@ -96,7 +96,7 @@ void guess() {
         int colIndex = col - '0';
         
         //test if the client is still connected to the server
-	    char testing[1];
+	char testing[1];
         send(sock, input, strlen(input), 0);
         int test = recv(sock, testing, 1, MSG_PEEK | MSG_DONTWAIT);
         if (test == 0) {
@@ -113,7 +113,6 @@ void guess() {
         if (bytes_received > 0) {
             result[bytes_received] = '\0';
             
-            if (result == '\0') { break;}
                 
             printf("Result: %s\n\n", result);
 		
