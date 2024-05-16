@@ -113,9 +113,6 @@ int main() {
                 die_with_error("Error receiving guess");
             }
     
-            // Ensure the buffer is null-terminated
-            guesses[i][3] = '\0'; 
-    
             // Now check if the specific 'W' was received
             if (bytes_received == 1 && guesses[i][0] == 'W') {
                 sendWinMessageAndCloseSocket(players[i].socket, "end_msg");
