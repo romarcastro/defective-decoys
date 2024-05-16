@@ -91,8 +91,10 @@ int main() {
         if (players[i].socket < 0) {
             die_with_error("Accept failed");
         }
+        printf("Player %d has connected!\n", i + 1);
         initializeBoard(players[i].board);
     }
+    	printf("Welcome to DEFECTIVE DECOYS LETS GO WALING\n");
 
     // Receive and set decoys for both players
     for (int i = 0; i < 2; i++) {
